@@ -1,0 +1,15 @@
+{
+    "/dist/js/background.js": "/dist/js/background.js",
+    "/dist/js/popup.js": "/dist/js/popup.js",
+    "/dist/css/simplebar.css": "/dist/css/simplebar.css",
+    "/dist/css/popup.css": "/dist/css/popup.css",
+    "/dist/images/icon-128x128.png": "/dist/images/icon-128x128.png",
+    "/dist/images/icon-16x16.png": "/dist/images/icon-16x16.png",
+    "/dist/images/icon-48x48.png": "/dist/images/icon-48x48.png",
+    "/dist/images/notification.png": "/dist/images/notification.png",
+    "/dist/css/fonts/cryptofont.ttf": "/dist/css/fonts/cryptofont.ttf",
+    "/dist/js/materialize.min.js": "/dist/js/materialize.min.js",
+    "/dist/js/simplebar.min.js": "/dist/js/simplebar.min.js",
+    "/dist/css/cryptofont.css": "/dist/css/cryptofont.css",
+    "/dist/css/materialize.min.css": "/dist/css/materialize.min.css"
+}

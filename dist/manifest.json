@@ -1,0 +1,22 @@
+{
+    "name": "Crypto Sniffer",
+    "version": "1.0.0",
+    "description": "",
+    "manifest_version": 2,
+    "browser_action": {
+        "default_popup": "popup.html",
+        "default_icon": "images/icon-48x48.png"
+    },
+    "background": {
+        "scripts": ["js/background.js"]
+    },
+    "permissions": [
+        "storage",
+        "notifications"
+    ],
+    "icons": {
+        "16": "images/icon-16x16.png",
+        "48": "images/icon-48x48.png",
+        "128": "images/icon-128x128.png"
+    }
+}
