@@ -279,7 +279,7 @@ const minutesToMilliseconds = (minutes) => {
     return ONE_MINUTE_IN_MS * minutes;
 };
 
-let updateInterval = minutesToMilliseconds(15);
+let globalUpdateInterval = minutesToMilliseconds(15);
 
 const priceToKilo = (value, fixed = 1) => {
     return (value / 1000).toFixed(fixed);
@@ -305,7 +305,7 @@ chrome.runtime.onInstalled.addListener(() => {
             updateInterval: 15,
             notifications: true,
             validTickers: validTickers,
-            sniffers: [{ symbol: "BTCUSDT", op: ">=", value: 1 }],
+            sniffers: [],
         },
         () => {
             console.log("Installed and set default Storage.");
@@ -316,8 +316,8 @@ chrome.runtime.onInstalled.addListener(() => {
     chrome.browserAction.setBadgeBackgroundColor({ color: [40, 167, 69, 255] });
 });
 
-chrome.storage.sync.get(["settings"], function(result) {
-    updateInterval = minutesToMilliseconds(result.settings.updateInterval);
+chrome.storage.sync.get(["updateInterval"], function(result) {
+    globalUpdateInterval = minutesToMilliseconds(result.updateInterval);
 });
 
 const notification = (title, message, icon, priority = 1) => {
@@ -348,10 +348,10 @@ const snifferOnTarget = (sniffer, tickers) => {
 };
 
 const snifferAlert = () => {
-    chrome.storage.sync.get(["sniffers", "tickers", "settings"], (storage) => {
+    chrome.storage.sync.get(["sniffers", "tickers", "notifications"], (storage) => {
         var snifferSended = [];
         storage.sniffers.map((sniffer) => {
-            if (snifferOnTarget(sniffer, storage.tickers) && storage.settings.notifications) {
+            if (snifferOnTarget(sniffer, storage.tickers) && storage.notifications) {
                 notification(snifferMessage(sniffer), "On target", "images/notification.png");
                 snifferSended.push(sniffer.symbol);
             }
@@ -393,14 +393,11 @@ const fetchApi = () => {
 
 fetchApi();
 
-let handleUpdateInterval = setInterval(fetchApi, updateInterval);
+let handleUpdateInterval = setInterval(fetchApi, globalUpdateInterval);
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log("Storage Changed", changes, namespace);
     if (namespace === "sync") {
-        if (changes.settings) {
-            updateInterval = changes.settings.updateInterval;
-        }
         if (changes.monitoring) {
             fetchApi();
         }

@@ -307,10 +307,6 @@ export default {
       opOptions: [">=", "<="],
       updateIntervals: [
         {
-          text: '1m',
-          value: 1
-        },
-        {
           text: '15m',
           value: 15
         },
