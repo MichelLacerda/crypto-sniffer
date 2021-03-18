@@ -154,10 +154,14 @@
                     class="material-icons red-text"
                     style="font-size: 16px; cursor: pointer"
                     v-on:click="removeMonitoring(pair.symbol)"
+                    v-show="pair.symbol !== 'BTCUSDT'"
                   >delete</i></td>
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="row">
+          <div class="col s12 grey-text lighten-4 center-align">{{ lastUpdate }}</div>
         </div>
       </div>
       <div
@@ -263,7 +267,12 @@
             <div class="switch">
               Show notifications?
               <label>
-                <input type="checkbox" v-model="notifications" :value="notifications" v-on:change="handleShowNotifications">
+                <input
+                  type="checkbox"
+                  v-model="notifications"
+                  :value="notifications"
+                  v-on:change="handleShowNotifications"
+                >
                 <span class="lever"></span>
               </label>
             </div>
@@ -293,6 +302,7 @@
 export default {
   data() {
     return {
+      lastUpdate: "",
       notifications: false,
       updateInterval: 15,
       tickers: [],
@@ -307,34 +317,34 @@ export default {
       opOptions: [">=", "<="],
       updateIntervals: [
         {
-          text: '15m',
-          value: 15
+          text: "15m",
+          value: 15,
         },
         {
-          text: '30m',
-          value: 30
+          text: "30m",
+          value: 30,
         },
         {
-          text: '45m',
-          value: 45
+          text: "45m",
+          value: 45,
         },
         {
-          text: '1h',
-          value: 60
+          text: "1h",
+          value: 60,
         },
         {
-          text: '2h',
-          value: 120
+          text: "2h",
+          value: 120,
         },
         {
-          text: '4h',
-          value: 240
+          text: "4h",
+          value: 240,
         },
         {
-          text: '8h',
-          value: 480
+          text: "8h",
+          value: 480,
         },
-      ]
+      ],
     };
   },
   created() {
@@ -405,21 +415,29 @@ export default {
       new SimpleBar(document.getElementById("sniffers"));
     },
     updateData: function () {
-      chrome.storage.sync.get(
-        ["tickers", "monitoring", "highlights", "validTickers", "sniffers", "notifications", "updateInterval"],
-        (storage) => {
-          this.tickers = storage.tickers;
-          this.monitoring = storage.monitoring;
-          this.highlights = storage.highlights;
-          this.validTickers = storage.validTickers;
-          this.sniffers = storage.sniffers;
-          this.notifications = storage.notifications;
-          this.updateInterval = storage.updateInterval;
-        }
-      );
+      let fields = [
+        "tickers",
+        "monitoring",
+        "highlights",
+        "validTickers",
+        "sniffers",
+        "notifications",
+        "updateInterval",
+        "lastUpdate",
+      ];
+      chrome.storage.sync.get(fields, (storage) => {
+        this.tickers = storage.tickers;
+        this.monitoring = storage.monitoring;
+        this.highlights = storage.highlights;
+        this.validTickers = storage.validTickers;
+        this.sniffers = storage.sniffers;
+        this.notifications = storage.notifications;
+        this.updateInterval = storage.updateInterval;
+        this.lastUpdate = storage.lastUpdate;
+      });
     },
-    handleShowNotifications:  function () {
-      console.log(this.notifications)
+    handleShowNotifications: function () {
+      console.log(this.notifications);
     },
     upperOrDown: function (value) {
       return value >= 0 ? "▲" : "▼";
@@ -469,12 +487,15 @@ export default {
   },
   filters: {
     toLocale: function (value) {
-      return value.toLocaleString("en", {
-        maximumFractionDigits: 8,
-      });
+      return (
+        value &&
+        value.toLocaleString("en", {
+          maximumFractionDigits: 8,
+        })
+      );
     },
-    toFixed: function (value, fixed) {
-      return value.toFixed(fixed);
+    toFixed: function (value, fixed = 2) {
+      return value && value.toFixed(fixed);
     },
   },
 };

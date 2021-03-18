@@ -306,6 +306,7 @@ chrome.runtime.onInstalled.addListener(() => {
             notifications: true,
             validTickers: validTickers,
             sniffers: [],
+            lastUpdate: null,
         },
         () => {
             console.log("Installed and set default Storage.");
@@ -363,28 +364,30 @@ const snifferAlert = () => {
     });
 };
 
+const prettify = (tickers) =>
+    tickers.map((ticker) => {
+        if (ticker.symbol === "BTCUSDT") BTCHighlight(ticker);
+
+        return {
+            symbol: ticker.symbol,
+            high: parseFloat(ticker.highPrice),
+            low: parseFloat(ticker.lowPrice),
+            last: parseFloat(ticker.lastPrice),
+            priceChange: parseFloat(ticker.priceChange),
+            variation: parseFloat(ticker.priceChangePercent),
+            volume: parseFloat(ticker.volume),
+        };
+    });
+
+const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const normalizeDate = (dt) => `Updated At ${dt.getDate()} ${meses[dt.getMonth()]} ${dt.getFullYear()} ${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
+
 const fetchApi = () => {
     chrome.storage.sync.get(["monitoring", "sniffer"], (storage) => {
         fetch("https://api1.binance.com/api/v3/ticker/24hr").then((response) => {
             response.json().then((data) => {
-                let prettifyTickers = data
-                    .filter((e) => storage.monitoring.includes(e.symbol))
-                    .map((ticker) => {
-                        if (ticker.symbol === "BTCUSDT") {
-                            BTCHighlight(ticker, storage.sniffers);
-                        }
-
-                        return {
-                            symbol: ticker.symbol,
-                            high: parseFloat(ticker.highPrice),
-                            low: parseFloat(ticker.lowPrice),
-                            last: parseFloat(ticker.lastPrice),
-                            priceChange: parseFloat(ticker.priceChange),
-                            variation: parseFloat(ticker.priceChangePercent),
-                            volume: parseFloat(ticker.volume),
-                        };
-                    });
-                chrome.storage.sync.set({ tickers: prettifyTickers }, () => {});
+                let filteredTickers = (data && data.length && data.filter((e) => storage.monitoring.includes(e.symbol))) || [];
+                chrome.storage.sync.set({ tickers: prettify(filteredTickers), lastUpdate: normalizeDate(new Date()) }, () => {});
                 snifferAlert();
             });
         });
