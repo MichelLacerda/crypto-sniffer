@@ -353,11 +353,11 @@ const snifferAlert = () => {
         storage.sniffers.map((sniffer) => {
             if (snifferOnTarget(sniffer, storage.tickers) && storage.notifications) {
                 notification(snifferMessage(sniffer), "On target", "images/notification.png");
-                snifferSended.push(sniffer.symbol);
+                snifferSended.push(sniffer.id);
             }
         });
         if (snifferSended.length && storage.sniffers.length) {
-            var newSniffers = storage.sniffers.filter((sniffer) => !snifferSended.includes(sniffer.symbol));
+            var newSniffers = storage.sniffers.filter((sniffer) => !snifferSended.includes(sniffer.id));
             chrome.storage.sync.set({ sniffers: newSniffers });
         }
     });
