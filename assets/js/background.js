@@ -300,13 +300,12 @@ chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.sync.set(
         {
             tickers: [],
-            monitoring: ["BTCUSDT", "ETHUSDT", "BNBUSDT", "FILUSDT"],
-            highlights: ["BTCUSDT", "FILUSDT"],
+            highlights: ["BTCUSDT", "ETHUSDT", "BNBUSDT", "FILUSDT"],
             updateInterval: 15,
             notifications: true,
             validTickers: validTickers,
             sniffers: [],
-            lastUpdate: null,
+            updatedAt: null,
         },
         () => {
             console.log("Installed and set default Storage.");
@@ -383,11 +382,11 @@ const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "O
 const normalizeDate = (dt) => `Updated At ${dt.getDate()} ${meses[dt.getMonth()]} ${dt.getFullYear()} ${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
 
 const fetchApi = () => {
-    chrome.storage.sync.get(["monitoring", "sniffer"], (storage) => {
+    chrome.storage.sync.get(["highlights"], (storage) => {
         fetch("https://api1.binance.com/api/v3/ticker/24hr").then((response) => {
             response.json().then((data) => {
-                let filteredTickers = (data && data.length && data.filter((e) => storage.monitoring.includes(e.symbol))) || [];
-                chrome.storage.sync.set({ tickers: prettify(filteredTickers), lastUpdate: normalizeDate(new Date()) }, () => {});
+                let filteredTickers = (data && data.length && data.filter((e) => storage.highlights.includes(e.symbol))) || [];
+                chrome.storage.sync.set({ tickers: prettify(filteredTickers), updatedAt: normalizeDate(new Date()) }, () => {});
                 snifferAlert();
             });
         });
@@ -401,7 +400,7 @@ let handleUpdateInterval = setInterval(fetchApi, globalUpdateInterval);
 chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log("Storage Changed", changes, namespace);
     if (namespace === "sync") {
-        if (changes.monitoring) {
+        if (changes.highlights) {
             fetchApi();
         }
         if (changes.notifications) {

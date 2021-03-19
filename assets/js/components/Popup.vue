@@ -15,155 +15,20 @@
         <li class="tab col s4"><a href="#sniffers">sniffers</a></li>
         <li class="tab col s4"><a href="#settings">settings</a></li>
       </ul>
+      <!-- PAIRS TAB -->
       <div
         id="pairs"
         class="col s12"
       >
-        <!-- Highlights -->
-        <div class="div">
-          <div
-            v-for="(item, index) in getHighlights"
-            v-bind:key="index"
-            class="row blue-grey darken-3 white-text"
-            style="padding: 8px 0; margin-bottom: 4px"
-          >
-            <div class="col s2">
-              <i
-                class="cf"
-                v-bind:class="iconClass(item.symbol)"
-                style="font-size: 48px; margin-top: 2px"
-              ></i>
-            </div>
-            <div class="col s5 center-align">
-              <div
-                class="row"
-                style="margin-bottom: unset"
-              >
-                <div class="col s12">
-                  <strong style="font-size: 16px">{{ item.symbol }}</strong>
-                </div>
-                <div class="col s12">
-                  <span class="blue-grey-text text-lighten-2">VOL</span>
-                  {{ item.volume | toLocale }}
-                </div>
-                <div class="col s12">
-                  <span class="blue-grey-text text-lighten-2">LOW</span>
-                  {{ item.low | toLocale }}
-                </div>
-              </div>
-            </div>
-            <div class="col s5 center-align">
-              <div
-                class="row"
-                style="margin-bottom: unset"
-              >
-                <div class="col s12">
-                  <strong style="font-size: 16px">{{ item.last | toLocale
-                    }}<span class="blue-grey-text text-lighten-2">LOW</span></strong>
-                </div>
-                <div
-                  class="col s12"
-                  v-bind:class="{
-                    'red-text': item.variation < 0,
-                    'green-text': item.variation >= 0,
-                  }"
-                >
-                  {{ item.priceChange }}
-                  <span v-text="upperOrDown(item.variation)"></span> ({{
-                    item.variation | toFixed(2)
-                  }}%)
-                </div>
-                <div class="col s12">
-                  <span class="blue-grey-text text-lighten-2">HIGH</span>
-                  {{ item.high | toLocale }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- pairs -->
-        <div class="row blue-grey darken-3 white-text">
-          <form style="padding-top: 0.75rem">
-            <div class="input-field col s9">
-              <select v-model="monitoringSelected">
-                <option
-                  v-for="option in getValidTickers"
-                  v-bind:value="option"
-                  v-bind:key="option"
-                >{{ option }}</option>
-              </select>
-              <label>Pairs</label>
-            </div>
-            <div class="input-field col s3">
-              <button
-                type="button"
-                class="btn btn-block waves-effect waves-light"
-                @click="addMonitoring"
-              ><i class="material-icons">add</i></button>
-            </div>
-          </form>
-          <table class="">
-            <thead>
-              <tr>
-                <th>NAME</th>
-                <th class="right-align">LAST</th>
-                <th class="right-align">24H</th>
-                <th class="right-align">VOL</th>
-                <th class="right-align"></th>
-                <th class="right-align"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(pair, index) in getMonitorings"
-                :key="index"
-              >
-                <td>
-                  <i
-                    class="cf"
-                    v-bind:class="iconClass(pair.symbol)"
-                  ></i>
-                  {{ pair.symbol }}
-                </td>
-                <td class="right-align">
-                  {{ pair.last | toLocale }}
-                  <span class="blue-grey-text text-lighten-2">USDT</span>
-                </td>
-                <td
-                  class="right-align"
-                  :class="{
-                    'red-text': pair.variation < 0,
-                    'green-text': pair.variation >= 0,
-                  }"
-                >
-                  {{ pair.variation | toLocale }}%
-                </td>
-                <td class="right-align">
-                  <span>{{ pair.volume | toLocale }}</span>
-
-                </td>
-                <td class="right-align"><i
-                    class="material-icons yellow-text"
-                    style="font-size: 16px; cursor: pointer"
-                    v-on:click="highlightsPair(pair.symbol)"
-                  >
-                    {{ highlightsIcon(pair.symbol) }}
-                  </i>
-                </td>
-                <td class="right-align"><i
-                    class="material-icons red-text"
-                    style="font-size: 16px; cursor: pointer"
-                    v-on:click="removeMonitoring(pair.symbol)"
-                    v-show="pair.symbol !== 'BTCUSDT'"
-                  >delete</i></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="row">
-          <div class="col s12 grey-text lighten-4 center-align">{{ lastUpdate }}</div>
+        <NewPair
+          v-bind:tickers="getValidTickers"
+        />
+        <Highlight v-bind:highlights="getHighlights" />
+        <div class="row" style="margin-bottom: 0">
+          <div class="col s12 grey-text lighten-4 center-align">{{ updatedAt }}</div>
         </div>
       </div>
+      <!-- SNIFFERS TAB -->
       <div
         id="sniffers"
         class="col s12"
@@ -184,7 +49,7 @@
                 required
               >
                 <option
-                  v-for="option in getMonitorings"
+                  v-for="option in getHighlights"
                   :value="option.symbol"
                   :key="option.symbol"
                 >{{ option.symbol }}</option>
@@ -232,7 +97,7 @@
             <thead>
               <tr>
                 <th class="left-align">Ticker</th>
-                <th class="center-align">Cond.</th>
+                <th class="center-align">Condition</th>
                 <th class="right-align">Value</th>
                 <th></th>
               </tr>
@@ -248,13 +113,14 @@
                 <td class="right-align"><i
                     class="material-icons red-text"
                     style="font-size: 16px; cursor: pointer"
-                    v-on:click="removeSniffer(sniffer.symbol)"
+                    v-on:click="removeSniffer(sniffer.id)"
                   >delete</i></td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
+      <!-- SETTINGS TAB -->
       <div
         id="settings"
         class="col s12"
@@ -299,10 +165,20 @@
 </template>
 
 <script>
+import Highlight from "./Highlight";
+import NewPair from "./NewPair";
+const makeId = () =>
+    Math.random()
+        .toString(36)
+        .substring(7);
 export default {
+  components: {
+    Highlight,
+    NewPair,
+  },
   data() {
     return {
-      lastUpdate: "",
+      updatedAt: "",
       notifications: false,
       updateInterval: 15,
       tickers: [],
@@ -347,18 +223,15 @@ export default {
       ],
     };
   },
-  created() {
-    // this.updateData();
-    /* chrome.storage.onChanged.addListener((changes, namespace) => {
-      this.updateData();
-    }); */
-  },
   mounted() {
     this.updateData();
     chrome.storage.onChanged.addListener((changes, namespace) => {
       if (namespace === "sync") {
         if (changes.tickers) {
           this.tickers = changes.tickers.newValue;
+        }
+        if (changes.highlights) {
+          this.highlights = changes.highlights.newValue;
         }
       }
     });
@@ -374,12 +247,8 @@ export default {
       if (!this.tickers.length) return [];
       return this.tickers.filter((e) => this.highlights.includes(e.symbol));
     },
-    getMonitorings: function () {
-      if (!this.tickers.length) return [];
-      return this.tickers.filter((e) => this.monitoring.includes(e.symbol));
-    },
     getValidTickers: function () {
-      return this.validTickers.filter((e) => !this.monitoring.includes(e));
+      return this.validTickers.filter((e) => !this.highlights.includes(e));
     },
     getSniffers: function () {
       if (!this.tickers.length || !this.sniffers.length) return [];
@@ -408,7 +277,7 @@ export default {
   },
   methods: {
     setupMaterial: function () {
-      M.Tabs.init(document.querySelector(".tabs"), { swipeable: true });
+      M.Tabs.init(document.querySelector(".tabs"), { swipeable: false, responsiveThreshold: 500 });
       M.FormSelect.init(document.querySelectorAll("select"), {});
 
       new SimpleBar(document.getElementById("pairs"));
@@ -417,23 +286,23 @@ export default {
     updateData: function () {
       let fields = [
         "tickers",
-        "monitoring",
+        // "monitoring",
         "highlights",
         "validTickers",
         "sniffers",
         "notifications",
         "updateInterval",
-        "lastUpdate",
+        "updatedAt",
       ];
       chrome.storage.sync.get(fields, (storage) => {
         this.tickers = storage.tickers;
-        this.monitoring = storage.monitoring;
+        // this.monitoring = storage.monitoring;
         this.highlights = storage.highlights;
         this.validTickers = storage.validTickers;
         this.sniffers = storage.sniffers;
         this.notifications = storage.notifications;
         this.updateInterval = storage.updateInterval;
-        this.lastUpdate = storage.lastUpdate;
+        this.updatedAt = storage.updatedAt;
       });
     },
     handleShowNotifications: function () {
@@ -475,14 +344,15 @@ export default {
       if (!this.snifferPair || !this.snifferOp || !this.snifferValue) return;
 
       let newSniffer = {
+        id: makeId(),
         symbol: this.snifferPair,
         op: this.snifferOp,
         value: this.snifferValue,
       };
       this.sniffers = [...this.sniffers, newSniffer];
     },
-    removeSniffer: function (symbol) {
-      this.sniffers = this.sniffers.filter((e) => e.symbol !== symbol);
+    removeSniffer: function (id) {
+      this.sniffers = this.sniffers.filter((e) => e.id !== id);
     },
   },
   filters: {
