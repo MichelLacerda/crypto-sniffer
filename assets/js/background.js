@@ -401,7 +401,9 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log("Storage Changed", changes, namespace);
     if (namespace === "sync") {
         if (changes.highlights) {
-            fetchApi();
+            if (changes.highlights.newValue.length > changes.highlights.oldValue.length) {
+                fetchApi();
+            }
         }
         if (changes.notifications) {
             if (changes.notifications.newValue) {

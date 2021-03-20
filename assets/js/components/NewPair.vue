@@ -1,7 +1,10 @@
 <template>
-  <div class="row blue-grey darken-3 white-text">
+  <div
+    class="row blue-grey darken-3 white-text"
+    style="margin-bottom: 4px"
+  >
     <form style="padding-top: 1rem">
-      <div class="input-field col s9">
+      <div class="input-field col s12" v-show="!loading">
         <select v-model="tickerSelected">
           <option
             v-for="option in tickers"
@@ -11,12 +14,10 @@
         </select>
         <label>Pairs</label>
       </div>
-      <div class="input-field col s3">
-        <button
-          type="button"
-          class="btn btn-block waves-effect waves-light"
-          @click="handleAddHighlights"
-        ><i class="material-icons">add</i></button>
+      <div class="col s12" v-show="loading">
+        <div class="progress">
+          <div class="indeterminate"></div>
+        </div>
       </div>
     </form>
   </div>
@@ -31,23 +32,31 @@ export default {
     return {
       tickerSelected: "",
       highlights: [],
+      loading: false
     };
   },
   watch: {
-    highlights(newValue, oldValue) {
+    highlights(newValue) {
       chrome.storage.sync.set({ highlights: newValue }, () => {});
     },
-  },
-  methods: {
-    handleAddHighlights: function () {
-      if (this.tickerSelected === "") return;
-      this.highlights = [...this.highlights, this.tickerSelected];
+    tickerSelected(newValue) {
+      if (newValue === "") return;
+      this.loading = true;
+      this.highlights = [...this.highlights, newValue];
       this.tickerSelected = "";
+      // setTimeout(() => {this.loading = false}, 2500)    
     },
   },
   mounted() {
     chrome.storage.sync.get(["highlights"], (storage) => {
       this.highlights = storage.highlights;
+    });
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === "sync") {
+        if (changes.tickers) {
+          this.loading = false;
+        }
+      }
     });
   },
 };

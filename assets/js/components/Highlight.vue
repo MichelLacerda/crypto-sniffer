@@ -1,8 +1,7 @@
 <template>
-  <div>
+  <div class="highlights">
     <div
-      class="row blue-grey darken-3 white-text"
-      style="padding: 8px 0; margin-bottom: 4px; position: relative"
+      class="row blue-grey darken-3 white-text highlight"
       v-for="(highlight, index) in highlights"
       v-bind:key="index"
     >
